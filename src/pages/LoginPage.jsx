@@ -1,6 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "../compontes/svgs/Logo";
+import axios from "axios";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthProvider";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -9,40 +12,31 @@ const LoginPage = () => {
     password: "",
   });
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
-    if (isAuthenticated) {
-      navigate("/"); // Redirect if already logged in
-    }
-  }, [navigate]);
-
-  const VALID_CREDENTIALS = {
-    username: "admin",
-    password: "admin123",
-  };
+  const { setIsAuthenticated, setToken } = useContext(AuthContext);
 
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setError("");
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.username || !formData.password) {
-      setError("Please fill in all fields");
-      return;
-    }
-    if (
-      formData.username === VALID_CREDENTIALS.username &&
-      formData.password === VALID_CREDENTIALS.password
-    ) {
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("username", formData.username);
+
+    const { username, password } = formData;
+    const responce = await axios.post("http://localhost:3000/login", {
+      username,
+      password,
+    });
+
+    if (responce.status === 200) {
+      setIsAuthenticated(true);
+      setToken(responce.data.token);
+      localStorage.setItem("token", responce.data.token);
+      console.log(responce.data.token);
       navigate("/products");
     } else {
       setError("Invalid username or password");

@@ -1,14 +1,40 @@
-import { Routes, Route } from "react-router-dom";
-import Orders from "./assets/pages/Orders";
-import Products from "./assets/pages/Products";
-import LoginPage from "./assets/pages/LoginPage";
+import { Routes, Route, Navigate } from "react-router-dom";
+import Orders from "./pages/Orders";
+import Products from "./pages/Products";
+import LoginPage from "./pages/LoginPage";
+import { useContext } from "react";
+import { AuthContext } from "./context/AuthProvider";
 
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated } = useContext(AuthContext);
+
+  if (!isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
 const App = () => {
   return (
     <Routes>
       <Route path="/" element={<LoginPage />} />
-      <Route path="/orders" element={<Orders />}></Route>
-      <Route path="/products" element={<Products />}></Route>
+      <Route
+        path="/orders"
+        element={
+          <ProtectedRoute>
+            <Orders />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/products"
+        element={
+          <ProtectedRoute>
+            <Products />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };

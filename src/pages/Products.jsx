@@ -2,8 +2,13 @@ import ProductManager from "./ProductManager";
 import { Pencil, Trash2, PlusCircle, X } from "lucide-react";
 import Sidebar from "../compontes/common/Sidebar";
 import StatCardGroup from "../compontes/stats/StatCardGroup ";
+import { useEffect } from "react";
+import axios from "axios";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthProvider";
 
 const ProductPage = () => {
+  const { token } = useContext(AuthContext);
   const {
     orders,
     isDeleteModalOpen,
@@ -23,7 +28,23 @@ const ProductPage = () => {
     handleChange,
     handleImageChange,
     handleSubmit,
+    setOrders,
   } = ProductManager();
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      const responce = await axios.get("http://localhost:3000/admin/products", {
+        headers: {
+          Authorization: `${token}`,
+        },
+      });
+      const data = await responce.data;
+      console.log(data);
+      setOrders(data);
+    };
+
+    fetchOrders();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100">

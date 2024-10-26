@@ -1,5 +1,7 @@
 import { useState } from "react";
 import axios from "axios";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthProvider";
 
 const categories = {
   "Tech Accessories": [
@@ -54,6 +56,26 @@ const ProductManager = () => {
     setOrders(orders.filter((order) => order.id !== selectedOrder.id));
     setIsDeleteModalOpen(false);
     setSelectedOrder(null);
+  };
+  const { token } = useContext(AuthContext);
+
+  const updateProduct = async (product) => {
+    const responce = await axios.put(
+      `http://localhost:3000/products/${product.id}`,
+      {
+        title: product.product,
+        category: product.mainCategory,
+        subcategory: product.subCategory,
+        description: product.description,
+        price: product.price,
+        stock: product.qty,
+        pictures: product.images,
+      },
+      { headers: { Authorization: `${token}` } }
+    );
+
+    const data = await responce.json();
+    console.log(data);
   };
 
   const cancelDelete = () => {
@@ -161,6 +183,9 @@ const ProductManager = () => {
 
     uploadedImageUrls = await Promise.all(uploadPromises);
     const firstImageUrl = uploadedImageUrls[0];
+
+    console.log(uploadedImageUrls);
+
     if (editMode) {
       setOrders((prev) =>
         prev.map((order) =>
@@ -173,6 +198,8 @@ const ProductManager = () => {
             : order
         )
       );
+      updateProduct(formData);
+      return;
     } else {
       setOrders((prev) => [
         ...prev,
@@ -185,11 +212,29 @@ const ProductManager = () => {
       ]);
     }
 
+    const responce = await axios.post(
+      "http://localhost:3000/products",
+      {
+        title: formData.product,
+        category: formData.mainCategory,
+        subcategory: formData.subCategory,
+        description: formData.description,
+        price: formData.price,
+        stock: formData.qty,
+        pictures: uploadedImageUrls,
+      },
+      { headers: { Authorization: `${token}` } }
+    );
+
+    const data = await responce.json();
+    console.log(data);
+
     handleFormClose();
   };
 
   return {
     orders,
+    setOrders,
     isDeleteModalOpen,
     selectedOrder,
     isFormOpen,

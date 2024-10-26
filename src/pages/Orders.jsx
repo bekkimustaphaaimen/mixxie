@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Trash2 } from "lucide-react";
 import StatCardGroup from "../compontes/stats/StatCardGroup ";
 import Sidebar from "../compontes/common/Sidebar";
+import axios from "axios";
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -19,6 +20,7 @@ const getStatusColor = (status) => {
 };
 
 const Orders = () => {
+
   const [orders, setOrders] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -38,6 +40,22 @@ const Orders = () => {
     setIsModalOpen(false);
     setSelectedOrder(null);
   };
+
+  useEffect(() => {
+
+    const fetchOrders = async () => {
+      try {
+        const { data } = await axios.get("/api/orders");
+        setOrders(data.orders);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+     
+    fetchOrders();
+    
+
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100">
