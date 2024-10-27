@@ -4,6 +4,7 @@ import StatCardGroup from "../compontes/stats/StatCardGroup ";
 import Sidebar from "../compontes/common/Sidebar";
 import axios from "axios";
 
+// Utility function to determine status color
 const getStatusColor = (status) => {
   switch (status) {
     case "Pending":
@@ -20,10 +21,21 @@ const getStatusColor = (status) => {
 };
 
 const Orders = () => {
-
   const [orders, setOrders] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const { data } = await axios.get("/api/orders");
+        setOrders(data.orders);
+      } catch (error) {
+        console.error("Failed to fetch orders:", error);
+      }
+    };
+    fetchOrders();
+  }, []);
 
   const handleDeleteClick = (order) => {
     setSelectedOrder(order);
@@ -31,7 +43,9 @@ const Orders = () => {
   };
 
   const confirmDelete = () => {
-    setOrders(orders.filter((order) => order.id !== selectedOrder.id));
+    setOrders((prevOrders) =>
+      prevOrders.filter((order) => order.id !== selectedOrder.id)
+    );
     setIsModalOpen(false);
     setSelectedOrder(null);
   };
@@ -40,22 +54,6 @@ const Orders = () => {
     setIsModalOpen(false);
     setSelectedOrder(null);
   };
-
-  useEffect(() => {
-
-    const fetchOrders = async () => {
-      try {
-        const { data } = await axios.get("/api/orders");
-        setOrders(data.orders);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-     
-    fetchOrders();
-    
-
-  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -100,7 +98,7 @@ const Orders = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {orders.map((order) => (
+                    {orders?.map((order) => (
                       <tr
                         key={order.id}
                         className="border-b hover:bg-gray-50 transition-colors"
@@ -157,6 +155,7 @@ const Orders = () => {
           </div>
         </div>
       </div>
+
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded-lg shadow-lg">
