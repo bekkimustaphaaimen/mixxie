@@ -2,6 +2,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import Logo from "../svgs/Logo";
 import { IoListOutline, IoBagOutline, IoPersonOutline } from "react-icons/io5";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthProvider";
 
 const Sidebar = () => {
   const location = useLocation();
@@ -13,7 +15,7 @@ const Sidebar = () => {
     { path: "/orders", icon: IoListOutline, label: "Orders" },
     { path: "/products", icon: IoBagOutline, label: "Products" },
   ];
-
+  const { logout } = useContext(AuthContext);
   const handleProfileClick = (e) => {
     e.preventDefault(); // Prevent navigation
     if (localStorage.getItem("token")) {
@@ -24,14 +26,13 @@ const Sidebar = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("username");
+    logout();
     navigate("/");
     setShowLogoutConfirm(false);
   };
 
   return (
-    <div className="h-screen w-28 bg-[#FCC5DC] flex flex-col items-center py-8 space-y-8 fixed">
+      <div className="h-screen w-28 bg-[#FCC5DC] flex flex-col items-center py-8 space-y-8 fixed">
       <Logo />
 
       <div className="flex flex-col space-y-6">

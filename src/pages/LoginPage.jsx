@@ -12,7 +12,7 @@ const LoginPage = () => {
     password: "",
   });
   const [error, setError] = useState("");
-  const { setIsAuthenticated, setToken } = useContext(AuthContext);
+  const { setIsAuthenticated, login } = useContext(AuthContext);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -33,9 +33,8 @@ const LoginPage = () => {
     });
 
     if (responce.status === 200) {
-      setIsAuthenticated(true);
-      setToken(responce.data.token);
-      localStorage.setItem("token", responce.data.token);
+
+      login(responce.data.token);
       console.log(responce.data.token);
       navigate("/products");
     } else {

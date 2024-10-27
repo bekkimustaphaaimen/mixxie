@@ -2,258 +2,271 @@ import { useState } from "react";
 import axios from "axios";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthProvider";
+import { set } from "@cloudinary/url-gen/actions/variable";
 
 const categories = {
-  "Tech Accessories": [
-    "Headphones & Earbuds",
-    "Phone Cases & Chargers",
-    "Smart Watches & Bands",
-    "Cables & Adapters",
-  ],
-  "Gaming Gear": [
-    "Gaming Headsets",
-    "Controllers",
-    "Gaming Chairs & Accessories",
-    "Mousepads & Keyboards",
-  ],
-  "Home Decor & Lifestyle": [
-    "LED Lights & Lamps",
-    "Wall Art & Posters",
-    "Desk Organizers",
-  ],
-  "Gifts & Special Offers": [
-    "Gift Sets",
-    "Limited Edition Items",
-    "Sales & Discounts",
-  ],
-  "Best Sellers / Trending": [],
+	"Tech Accessories": [
+		"Headphones & Earbuds",
+		"Phone Cases & Chargers",
+		"Smart Watches & Bands",
+		"Cables & Adapters",
+	],
+	"Gaming Gear": [
+		"Gaming Headsets",
+		"Controllers",
+		"Gaming Chairs & Accessories",
+		"Mousepads & Keyboards",
+	],
+	"Home Decor & Lifestyle": [
+		"LED Lights & Lamps",
+		"Wall Art & Posters",
+		"Desk Organizers",
+	],
+	"Gifts & Special Offers": [
+		"Gift Sets",
+		"Limited Edition Items",
+		"Sales & Discounts",
+	],
+	"Best Sellers / Trending": [],
 };
 
 const ProductManager = () => {
-  const [orders, setOrders] = useState([]);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editMode, setEditMode] = useState(false);
-  const [formData, setFormData] = useState({
-    id: null,
-    product: "",
-    mainCategory: Object.keys(categories)[0],
-    subCategory: categories[Object.keys(categories)[0]][0] || "",
-    description: "",
-    price: "",
-    qty: "1",
-    images: [],
-  });
-  const [imagePreviews, setImagePreviews] = useState([]);
+	const { token } = useContext(AuthContext);
+	const [orders, setOrders] = useState([]);
+	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+	const [selectedOrder, setSelectedOrder] = useState(null);
+	const [isFormOpen, setIsFormOpen] = useState(false);
+	const [editMode, setEditMode] = useState(false);
+	const [formData, setFormData] = useState({
+		id: null,
+		product: "",
+		mainCategory: Object.keys(categories)[0],
+		subCategory: categories[Object.keys(categories)[0]][0] || "",
+		description: "",
+		price: "",
+		qty: "1",
+		images: [],
+	});
+	const [imagePreviews, setImagePreviews] = useState([]);
 
-  const handleDeleteClick = (order) => {
-    setSelectedOrder(order);
-    setIsDeleteModalOpen(true);
-  };
+	const handleDeleteClick = (order) => {
+		setSelectedOrder(order);
+		setIsDeleteModalOpen(true);
+	};
 
-  const confirmDelete = () => {
-    setOrders(orders.filter((order) => order.id !== selectedOrder.id));
-    setIsDeleteModalOpen(false);
-    setSelectedOrder(null);
-  };
-  const { token } = useContext(AuthContext);
+	const confirmDelete = () => {
+		const responce = axios.delete(
+			`http://localhost:3000/admin/products/${selectedOrder.id}`,
+			{
+				headers: { Authorization: `${token}` },
+			}
+		);
 
-  const updateProduct = async (product) => {
-    const responce = await axios.put(
-      `http://localhost:3000/products/${product.id}`,
-      {
-        title: product.product,
-        category: product.mainCategory,
-        subcategory: product.subCategory,
-        description: product.description,
-        price: product.price,
-        stock: product.qty,
-        pictures: product.images,
-      },
-      { headers: { Authorization: `${token}` } }
-    );
+		if (responce.status == 200) {
+			alert("Product Deleted Successfully");
+		}
+		console.log("Deleted");
+		setOrders(orders.filter((order) => order.id !== selectedOrder.id));
+		setIsDeleteModalOpen(false);
+		setSelectedOrder(null);
+	};
 
-    const data = await responce.json();
-    console.log(data);
-  };
+	const updateProduct = async (product, imgs) => {
+		console.log(imgs);
+		const responce = await axios.put(
+			`http://localhost:3000/admin/products/${product.id}`,
+			{
+				title: product.product,
+				category: product.mainCategory,
+				subcategory: product.subCategory,
+				description: product.description,
+				price: product.price,
+				stock: product.qty,
+				pictures: imgs,
+			},
+			{ headers: { Authorization: `${token}` } }
+		);
 
-  const cancelDelete = () => {
-    setIsDeleteModalOpen(false);
-    setSelectedOrder(null);
-  };
+		if (responce.status == 200) {
+			alert("Product Updated Successfully");
+		}
+		const data = await responce.json();
 
-  const handleAddClick = () => {
-    const firstCategory = Object.keys(categories)[0];
-    setFormData({
-      id: null,
-      product: "",
-      mainCategory: firstCategory,
-      subCategory: categories[firstCategory][0] || "",
-      description: "",
-      price: "",
-      qty: "1",
-      images: [],
-    });
-    setEditMode(false);
-    setIsFormOpen(true);
-    setImagePreviews([]);
-  };
+		console.log(data);
+	};
 
-  const handleEditClick = (order) => {
-    setFormData({
-      id: order.id,
-      product: order.product,
-      mainCategory: order.mainCategory,
-      subCategory: order.subCategory,
-      description: order.description,
-      price: order.price,
-      qty: order.qty,
-      images: order.images || [],
-    });
-    setEditMode(true);
-    setIsFormOpen(true);
-    setImagePreviews(order.images || []);
-  };
+	const cancelDelete = () => {
+		setIsDeleteModalOpen(false);
+		setSelectedOrder(null);
+	};
 
-  const handleFormClose = () => {
-    setIsFormOpen(false);
-    const firstCategory = Object.keys(categories)[0];
-    setFormData({
-      id: null,
-      product: "",
-      mainCategory: firstCategory,
-      subCategory: categories[firstCategory][0] || "",
-      description: "",
-      price: "",
-      qty: "1",
-      images: [],
-    });
-    setImagePreviews([]);
-  };
+	const handleAddClick = () => {
+		const firstCategory = Object.keys(categories)[0];
+		setFormData({
+			id: null,
+			product: "",
+			mainCategory: firstCategory,
+			subCategory: categories[firstCategory][0] || "",
+			description: "",
+			price: "",
+			qty: "1",
+			images: [],
+		});
+		setEditMode(false);
+		setIsFormOpen(true);
+		setImagePreviews([]);
+	};
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name === "mainCategory") {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-        subCategory: categories[value][0] || "",
-      }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
-  };
+	const handleEditClick = (order) => {
+		setFormData({
+			id: order.id,
+			product: order.product,
+			mainCategory: order.mainCategory,
+			subCategory: order.subCategory,
+			description: order.description,
+			price: order.price,
+			qty: order.qty,
+			images: order.images || [],
+		});
+		setEditMode(true);
+		setIsFormOpen(true);
+		setImagePreviews(order.images || []);
+	};
 
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    const imageUrls = files.map((file) => URL.createObjectURL(file));
-    setFormData((prev) => ({ ...prev, images: [...prev.images, ...files] }));
-    setImagePreviews((prev) => [...prev, ...imageUrls]);
-  };
+	const handleFormClose = () => {
+		setIsFormOpen(false);
+		const firstCategory = Object.keys(categories)[0];
+		setFormData({
+			id: null,
+			product: "",
+			mainCategory: firstCategory,
+			subCategory: categories[firstCategory][0] || "",
+			description: "",
+			price: "",
+			qty: "1",
+			images: [],
+		});
+		setImagePreviews([]);
+	};
 
-  const deleteImage = (index) => {
-    const newImages = formData.images.filter((_, i) => i !== index);
-    const newPreviews = imagePreviews.filter((_, i) => i !== index);
-    setFormData((prev) => ({ ...prev, images: newImages }));
-    setImagePreviews(newPreviews);
-  };
+	const handleChange = (e) => {
+		const { name, value } = e.target;
+		if (name === "mainCategory") {
+			setFormData((prev) => ({
+				...prev,
+				[name]: value,
+				subCategory: categories[value][0] || "",
+			}));
+		} else {
+			setFormData((prev) => ({ ...prev, [name]: value }));
+		}
+	};
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+	const handleImageChange = (e) => {
+		const files = Array.from(e.target.files);
+		const imageUrls = files.map((file) => URL.createObjectURL(file));
+		setFormData((prev) => ({ ...prev, images: [...prev.images, ...files] }));
+		setImagePreviews((prev) => [...prev, ...imageUrls]);
+	};
 
-    let uploadedImageUrls = [];
+	const deleteImage = (index) => {
+		const newImages = formData.images.filter((_, i) => i !== index);
+		const newPreviews = imagePreviews.filter((_, i) => i !== index);
+		setFormData((prev) => ({ ...prev, images: newImages }));
+		setImagePreviews(newPreviews);
+	};
 
-    const uploadPromises = formData.images.map(async (image) => {
-      const formDataImg = new FormData();
-      formDataImg.append("file", image);
-      formDataImg.append("upload_preset", "y4kjiphq");
+	const handleSubmit = async (e) => {
+		e.preventDefault();
 
-      try {
-        const response = await axios.post(
-          `https://api.cloudinary.com/v1_1/defkusfga/image/upload`,
-          formDataImg
-        );
-        return response.data.secure_url;
-      } catch (error) {
-        console.error("Image upload failed", error);
-        return null;
-      }
-    });
+		let uploadedImageUrls = [];
 
-    uploadedImageUrls = await Promise.all(uploadPromises);
-    const firstImageUrl = uploadedImageUrls[0];
+		const uploadPromises = formData.images.map(async (image) => {
+			const formDataImg = new FormData();
+			formDataImg.append("file", image);
+			formDataImg.append("upload_preset", "y4kjiphq");
 
-    console.log(uploadedImageUrls);
+			try {
+				const response = await axios.post(
+					`https://api.cloudinary.com/v1_1/defkusfga/image/upload`,
+					formDataImg
+				);
+				return response.data.secure_url;
+			} catch (error) {
+				console.error("Image upload failed", error);
+				return null;
+			}
+		});
 
-    if (editMode) {
-      setOrders((prev) =>
-        prev.map((order) =>
-          order.id === formData.id
-            ? {
-                ...formData,
-                images: uploadedImageUrls.filter(Boolean),
-                image: uploadedImageUrls[0] || order.image,
-              }
-            : order
-        )
-      );
-      updateProduct(formData);
-      return;
-    } else {
-      setOrders((prev) => [
-        ...prev,
-        {
-          ...formData,
-          id: prev.length > 0 ? Math.max(...prev.map((o) => o.id)) + 1 : 1,
-          images: uploadedImageUrls.filter(Boolean),
-          image: firstImageUrl,
-        },
-      ]);
-    }
+		uploadedImageUrls = await Promise.all(uploadPromises);
+		const firstImageUrl = uploadedImageUrls[0];
 
-    const responce = await axios.post(
-      "http://localhost:3000/products",
-      {
-        title: formData.product,
-        category: formData.mainCategory,
-        subcategory: formData.subCategory,
-        description: formData.description,
-        price: formData.price,
-        stock: formData.qty,
-        pictures: uploadedImageUrls,
-      },
-      { headers: { Authorization: `${token}` } }
-    );
+		console.log(uploadedImageUrls);
 
-    const data = await responce.json();
-    console.log(data);
+		if (editMode) {
+			console.log("Editing");
+			setOrders((prev) =>
+				prev.map((order) =>
+					order.id === formData.id
+						? {
+								...formData,
+								images: uploadedImageUrls.filter(Boolean),
+								image: uploadedImageUrls[0] || order.image,
+						  }
+						: order
+				)
+			);
+			updateProduct(formData, uploadedImageUrls);
+			return;
+		}
 
-    handleFormClose();
-  };
+		const responce = await axios.post(
+			"http://localhost:3000/admin/products",
+			{
+				title: formData.product,
+				category: formData.mainCategory,
+				subcategory: formData.subCategory,
+				description: formData.description,
+				price: formData.price,
+				stock: formData.qty,
+				pictures: uploadedImageUrls,
+			},
+			{ headers: { Authorization: `${token}` } }
+		);
+		console.log(" .........................................");
+		console.log(responce.data);
+		console.log(" .........................................");
 
-  return {
-    orders,
-    setOrders,
-    isDeleteModalOpen,
-    selectedOrder,
-    isFormOpen,
-    editMode,
-    formData,
-    categories,
-    imagePreviews,
-    deleteImage,
-    setIsDeleteModalOpen,
-    handleDeleteClick,
-    confirmDelete,
-    cancelDelete,
-    handleAddClick,
-    handleEditClick,
-    handleFormClose,
-    handleChange,
-    handleImageChange,
-    handleSubmit,
-  };
+		handleFormClose();
+
+		if (responce.status == 200) {
+			alert("Product Added Successfully");
+			setOrders((prev) => [...prev, responce.data]);
+		}
+	};
+
+	return {
+		orders,
+		setOrders,
+		isDeleteModalOpen,
+		selectedOrder,
+		isFormOpen,
+		editMode,
+		formData,
+		categories,
+		imagePreviews,
+		deleteImage,
+		setIsDeleteModalOpen,
+		handleDeleteClick,
+		confirmDelete,
+		cancelDelete,
+		handleAddClick,
+		handleEditClick,
+		handleFormClose,
+		handleChange,
+		handleImageChange,
+		handleSubmit,
+	};
 };
 
 export default ProductManager;
