@@ -9,33 +9,54 @@ const AuthProvider = ({ children }) => {
   // On component mount, retrieve the token from localStorage
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
+    console.log(storedToken + "storedToken");
     if (storedToken) {
       setIsAuthenticated(true);
       setToken(storedToken);
     }
   }, []);
 
-  // Add a cleanup event to delete the token when the window/tab closes
+  const login = (newToken) => {
+    localStorage.setItem("token", newToken);
+    setToken(newToken);
+    setIsAuthenticated(true);
+  };
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    setToken("");
+    setIsAuthenticated(false);
+  };
+
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      console.log("Deleting token on window close...");
-      localStorage.removeItem("token"); // Adjust if using sessionStorage or cookies
-      setToken(""); // Clear token state as well
-      setIsAuthenticated(false);
+    const checkTokenExpiration = () => {
+      const storedToken = localStorage.getItem("token");
+      if (storedToken) {
+        try {
+          // If you're using JWT tokens, you can check expiration
+          const tokenData = JSON.parse(atob(storedToken.split('.')[1]));
+          if (tokenData.exp * 1000 < Date.now()) {
+            logout();
+          }
+        } catch (error) {
+          console.error("Error checking token expiration:", error);
+        }
+      }
     };
 
-    // Add the event listener
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    // Cleanup the event listener on component unmount
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
+    // Check token expiration every minute
+    const interval = setInterval(checkTokenExpiration, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, setIsAuthenticated, token, setToken }}
+      value={{ 
+        isAuthenticated, 
+        token,
+        login,
+        logout
+      }}
     >
       {children}
     </AuthContext.Provider>
@@ -43,3 +64,4 @@ const AuthProvider = ({ children }) => {
 };
 
 export default AuthProvider;
+
