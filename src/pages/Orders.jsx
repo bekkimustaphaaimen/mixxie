@@ -6,6 +6,7 @@ import axios from "axios";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthProvider";
 
+// Utility function to determine status color
 const getStatusColor = (status) => {
 	switch (status) {
 		case "Pending":
