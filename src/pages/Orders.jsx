@@ -22,7 +22,7 @@ const getStatusColor = (status) => {
 };
 
 const Orders = () => {
-  const { token } = useContext(AuthContext);
+	const { token } = useContext(AuthContext);
 	const [orders, setOrders] = useState([]);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [selectedOrder, setSelectedOrder] = useState(null);
@@ -34,7 +34,7 @@ const Orders = () => {
 
 	const confirmDelete = () => {
 		const responce = axios.delete(
-			`http://localhost:3000/admin/orders/${selectedOrder.id}`,
+			`http://localhost:8080/admin/orders/${selectedOrder.id}`,
 			{
 				headers: { Authorization: `${token}` },
 			}
@@ -55,11 +55,14 @@ const Orders = () => {
 	useEffect(() => {
 		const fetchOrders = async () => {
 			try {
-				const { data } = await axios.get("http://localhost:3000/admin/allorders", {
-					headers: { Authorization: `${token}` },
-				});
-        console.log(data)
-        console.log(data.orders)
+				const { data } = await axios.get(
+					"http://localhost:8080/admin/allorders",
+					{
+						headers: { Authorization: `${token}` },
+					}
+				);
+				console.log(data);
+				console.log(data.orders);
 				setOrders(data.orders);
 			} catch (error) {
 				console.error(error);
@@ -120,8 +123,8 @@ const Orders = () => {
 												<td className="py-4 px-4">
 													<div className="flex items-center gap-3">
 														<img
-															src={order.image}
-															alt={order.product}
+															src={order.subOrders[0].picture}
+															alt={`order Num ${order.id}`}
 															className="w-10 h-10 rounded-lg object-cover"
 														/>
 														<span className="text-sm text-gray-700">

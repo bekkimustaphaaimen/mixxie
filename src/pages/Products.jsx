@@ -33,7 +33,7 @@ const ProductPage = () => {
 
 	useEffect(() => {
 		const fetchOrders = async () => {
-			const responce = await axios.get("http://localhost:3000/admin/products", {
+			const responce = await axios.get("http://localhost:8080/admin/products", {
 				headers: {
 					Authorization: `${token}`,
 				},

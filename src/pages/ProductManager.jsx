@@ -56,7 +56,7 @@ const ProductManager = () => {
 
 	const confirmDelete = () => {
 		const responce = axios.delete(
-			`http://localhost:3000/admin/products/${selectedOrder.id}`,
+			`http://localhost:8080/admin/products/${selectedOrder.id}`,
 			{
 				headers: { Authorization: `${token}` },
 			}
@@ -74,7 +74,7 @@ const ProductManager = () => {
 	const updateProduct = async (product, imgs) => {
 		console.log(imgs);
 		const responce = await axios.put(
-			`http://localhost:3000/admin/products/${product.id}`,
+			`http://localhost:8080/admin/products/${product.id}`,
 			{
 				title: product.product,
 				category: product.mainCategory,
@@ -221,7 +221,7 @@ const ProductManager = () => {
 		}
 
 		const responce = await axios.post(
-			"http://localhost:3000/admin/products",
+			"http://localhost:8080/admin/products",
 			{
 				title: formData.product,
 				category: formData.mainCategory,
