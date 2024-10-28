@@ -5,54 +5,14 @@ import Sidebar from "../compontes/common/Sidebar";
 import axios from "axios";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthProvider";
+import OrderLine from "../compontes/orderRow";
 
 // Utility function to determine status color
-const getStatusColor = (status) => {
-	switch (status) {
-		case "Pending":
-			return "text-red-500";
-		case "Shipping":
-			return "text-blue-500";
-		case "Refund":
-			return "text-yellow-500";
-		case "Completed":
-			return "text-green-500";
-		default:
-			return "text-gray-500";
-	}
-};
 
 const Orders = () => {
 	const { token } = useContext(AuthContext);
 	const [orders, setOrders] = useState([]);
-	const [isModalOpen, setIsModalOpen] = useState(false);
-	const [selectedOrder, setSelectedOrder] = useState(null);
-
-	const handleDeleteClick = (order) => {
-		setSelectedOrder(order);
-		setIsModalOpen(true);
-	};
-
-	const confirmDelete = () => {
-		const responce = axios.delete(
-			`http://localhost:8080/admin/orders/${selectedOrder.id}`,
-			{
-				headers: { Authorization: `${token}` },
-			}
-		);
-		if (responce.status == 200) {
-			alert("Order Deleted Successfully");
-		}
-		setOrders(orders.filter((order) => order.id !== selectedOrder.id));
-		setIsModalOpen(false);
-		setSelectedOrder(null);
-	};
-
-	const cancelDelete = () => {
-		setIsModalOpen(false);
-		setSelectedOrder(null);
-	};
-
+	
 	useEffect(() => {
 		const fetchOrders = async () => {
 			try {
@@ -105,9 +65,6 @@ const Orders = () => {
 												Revenue
 											</th>
 											<th className="text-left py-4 px-4 text-sm font-medium text-gray-500">
-												Net Profit
-											</th>
-											<th className="text-left py-4 px-4 text-sm font-medium text-gray-500">
 												Status
 											</th>
 											<th className="text-left py-4 px-4 text-sm font-medium text-gray-500">
@@ -116,56 +73,11 @@ const Orders = () => {
 										</tr>
 									</thead>
 									<tbody>
-										{orders?.map((order) => (
-											<tr
-												key={order.id}
-												className="border-b hover:bg-gray-50 transition-colors"
-											>
-												<td className="py-4 px-4">
-													<div className="flex items-center gap-3">
-														<img
-															src={order.subOrders[0].picture}
-															alt={`order Num ${order.id}`}
-															className="w-10 h-10 rounded-lg object-cover"
-														/>
-														<span className="text-sm text-gray-700">
-															{order.product}
-														</span>
-													</div>
-												</td>
-												<td className="py-4 px-4 text-sm text-gray-600">
-													{order.qty}
-												</td>
-												<td className="py-4 px-4 text-sm text-gray-600">
-													{order.date}
-												</td>
-												<td className="py-4 px-4 text-sm text-gray-600">
-													{order.revenue}
-												</td>
-												<td className="py-4 px-4 text-sm text-gray-600">
-													{order.netProfit}
-												</td>
-												<td className="py-4 px-4">
-													<span
-														className={`text-sm ${getStatusColor(
-															order.status
-														)}`}
-													>
-														{order.status}
-													</span>
-												</td>
-												<td className="py-4 px-4">
-													<div className="flex items-center gap-2">
-														<button
-															className="p-1 hover:bg-gray-100 rounded"
-															onClick={() => handleDeleteClick(order)}
-														>
-															<Trash2 className="w-4 h-4 text-gray-500" />
-														</button>
-													</div>
-												</td>
-											</tr>
-										))}
+										{orders?.map(
+											(order) => (
+												<OrderLine order={order} key={order.id}  setOrders={setOrders}  />
+											)
+										)}
 									</tbody>
 								</table>
 							</div>
@@ -173,30 +85,7 @@ const Orders = () => {
 					</div>
 				</div>
 			</div>
-			{isModalOpen && (
-				<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-					<div className="bg-white p-6 rounded-lg shadow-lg">
-						<h3 className="text-lg font-semibold">Confirm Deletion</h3>
-						<p className="mt-2">
-							Are you sure you want to delete {selectedOrder?.product}?
-						</p>
-						<div className="flex justify-end gap-4 mt-4">
-							<button
-								className="px-4 py-2 bg-gray-300 rounded"
-								onClick={cancelDelete}
-							>
-								Cancel
-							</button>
-							<button
-								className="px-4 py-2 bg-red-500 text-white rounded"
-								onClick={confirmDelete}
-							>
-								Delete
-							</button>
-						</div>
-					</div>
-				</div>
-			)}
+			
 		</div>
 	);
 };

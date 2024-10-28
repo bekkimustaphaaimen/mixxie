@@ -90,8 +90,9 @@ const ProductManager = () => {
 		if (responce.status == 200) {
 			alert("Product Updated Successfully");
 		}
-		const data = await responce.json();
-
+		const data = await responce.data;
+		setIsFormOpen(false);
+	
 		console.log(data);
 	};
 
@@ -118,19 +119,20 @@ const ProductManager = () => {
 	};
 
 	const handleEditClick = (order) => {
+		const pictures = order.Pictures.map((pic) => pic.url);
 		setFormData({
 			id: order.id,
-			product: order.product,
-			mainCategory: order.mainCategory,
+			product: order.title,
+			mainCategory: order.category,
 			subCategory: order.subCategory,
 			description: order.description,
 			price: order.price,
-			qty: order.qty,
-			images: order.images || [],
+			qty: order.quantity,
+			images: pictures || [],
 		});
 		setEditMode(true);
 		setIsFormOpen(true);
-		setImagePreviews(order.images || []);
+		setImagePreviews(pictures || []);
 	};
 
 	const handleFormClose = () => {

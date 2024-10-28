@@ -30,14 +30,14 @@ const StatCard = ({ title, value, change }) => {
     <div className="bg-white p-4 rounded-lg shadow flex flex-row gap-2 justify-between items-end">
       <div className="flex flex-col gap-2 justify-between">
         <span className="text-gray-500">{title}</span>
-        <div className="text-2xl font-bold mt-2">{value}</div>
+        <div className="text-2xl font-bold mt-2">{value} {title === "This Month Revenue" ? "DA" : ""}</div>
       </div>
-      <div className="h-12 flex justify-center items-center">
+      {/* <div className="h-12 flex justify-center items-center">
         {chart}
       </div>
       <span style={{ color }} className="h-full">
         {change}
-      </span>
+      </span> */}
     </div>
   );
 };
